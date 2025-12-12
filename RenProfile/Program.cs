@@ -14,24 +14,23 @@ namespace RenProfileConsole
     /// </summary>
     internal class Program
     {
-        //- Define Variables
         public static bool logErrs = false;
-
         public static int errors = 0;
         public static int successful = 0;
         public static int processed = 0;
 
-        //- Define Paths
         public static String oldDir = "";
-
         public static String newDir = "";
         public static String errPath = "";
 
+        /// <summary>
+        /// Entry point for the console application. Validates parameters and initiates profile renaming.
+        /// </summary>
+        /// <param name="args">Command line arguments: oldProfilePath newProfilePath [errorLogPath]</param>
         private static void Main(string[] args)
         {
             try
             {
-                //- Parameter error checking
                 if (args.Length == 0)
                 {
                     Console.WriteLine("Missing all parameters.");
@@ -57,6 +56,8 @@ namespace RenProfileConsole
                 {
                     errPath = args[2];
 
+                    // Validate error log path: must be long enough, contain no invalid chars,
+                    // and its parent directory must exist (file itself doesn't need to exist yet)
                     if (!String.IsNullOrWhiteSpace(errPath)
                         && errPath.Length > 4
                         && errPath.IndexOfAny(Path.GetInvalidPathChars()) == -1
@@ -78,11 +79,8 @@ namespace RenProfileConsole
                     return;
                 }
 
-                //- Set variables
                 oldDir = args[0];
                 newDir = args[1];
-
-                //- Path error checking
                 if (String.IsNullOrWhiteSpace(oldDir) || oldDir.Length < 4)
                 {
                     Console.WriteLine("Old user profile path is invalid.");
@@ -120,29 +118,29 @@ namespace RenProfileConsole
                 return;
             }
 
-            //- No errors and parameters are all as expected.
-            //- Let's get started!
             Start();
         }
 
+        /// <summary>
+        /// Performs the profile renaming operation by loading the user registry hive,
+        /// updating all references in HKLM and HKU, and renaming the physical directory.
+        /// </summary>
         public static void Start()
         {
-            //- Moved meat of the code into Start mathod to making it cleaner when creating UI tool next.
-
+            // Create a temporary unique name to mount the target user's registry hive
             string tempUserHiveName = $"__tmpMoveUserProfile";
 
-            // Even running as administrator, the functionality to load and unload registry hives
-            // is restricted without requesting extra privilges.
+            // SeRestorePrivilege is required to load/unload registry hives, even when running as administrator
             if (Privileges.EnablePrivileges("SeRestorePrivilege"))
             {
+                // Load the user's NTUSER.DAT file into the registry temporarily
                 int loadCode = RegistryUtils.LoadUserHive($"{oldDir}\\NTUSER.dat", tempUserHiveName);
 
+                // Keep the hive loaded while we update references
                 using (RegistryKey userHive = Registry.Users.OpenSubKey(tempUserHiveName))
                 {
-                    // Only need to deal with two trees - HKEY_LOCAL_MACHINE and HKEY_USERS.
-                    // HKEY_CURRENT_USER won't be the user being modified (that hive is mounted under
-                    // HKEY_USER, and other trees that may contain the path are apparently reflections of
-                    // subtrees of one of the trees being modified.
+                    // Update HKLM and HKU only; HKCU is for the current user (not the target profile),
+                    // and other hives (HKCR, HKCC) are symlinks to subtrees of these two
                     Console.WriteLine("==========Updating HKLM==========");
                     try { Registry.LocalMachine.IterateKeys((key) => UpdateKey(key, oldDir, newDir)); }
                     catch { Console.WriteLine("Error occurred when updating HKLM keys. Check output."); }
@@ -152,7 +150,10 @@ namespace RenProfileConsole
                     Console.WriteLine($"Processed: {processed}, Updated: {successful}, Failed: {errors}");
                 }
 
+                // Unload the hive before attempting to rename the directory
                 RegistryUtils.UnloadUserHive(tempUserHiveName);
+
+                // Rename the actual profile directory on disk
                 try { Directory.Move(oldDir, newDir); }
                 catch { Console.WriteLine("Error renaming physical profile directories, another process might have a lock still."); }
 
@@ -165,6 +166,10 @@ namespace RenProfileConsole
             }
         }
 
+        /// <summary>
+        /// Displays the exit code and waits for user input before terminating the application.
+        /// </summary>
+        /// <param name="exitCode">-1 for fatal error, 0 for failure, 1 for success</param>
         private static void ExitConsole(int exitCode)
         {
             Console.WriteLine("");
@@ -174,26 +179,40 @@ namespace RenProfileConsole
             Environment.Exit(exitCode);
         }
 
+        /// <summary>
+        /// Writes an error message to the error log file if logging is enabled.
+        /// </summary>
+        /// <param name="errorMessage">The error message to log</param>
         internal static void LogError(string errorMessage)
         {
             try
             {
-                //- Condition ? True : False
                 using (FileStream file = File.Exists(errPath) ? File.Open(errPath, FileMode.Append) : File.Open(errPath, FileMode.CreateNew))
                 using (StreamWriter sw = new StreamWriter(file))
                 { sw.WriteLine($"{DateTime.Now.ToString()}: {errorMessage} \n==========="); }
             }
-            catch { /*Error writing to error log*/}
+            catch { /* Silently fail if unable to write to error log */ }
         }
 
+        /// <summary>
+        /// Updates all values and subkeys in a registry key that contain the old directory path,
+        /// replacing them with the new directory path. Handles both standard and short (8.3) path formats.
+        /// </summary>
+        /// <param name="key">The registry key to update</param>
+        /// <param name="oldDir">The old profile directory path</param>
+        /// <param name="newDir">The new profile directory path</param>
         private static void UpdateKey(RegistryKey key, string oldDir, string newDir)
         {
             try
             {
+                // Get the 8.3 short path format (e.g., "C:\Users\JOHNDO~1") because some registry
+                // entries may store paths in this format for backwards compatibility
                 StringBuilder sb = new StringBuilder(300);
                 int n = NativeMethods.FileSystem.GetShortPathName(oldDir, sb, 300);
                 string shortOldDir = sb.ToString();
 
+                // Create a regex pattern that matches either the long or short path format
+                // Regex.Escape ensures special chars in paths don't break the pattern
                 string pattern = $"({Regex.Escape(oldDir)}|{Regex.Escape(shortOldDir)})";
 
                 string[] names = key.GetValueNames();
@@ -205,11 +224,13 @@ namespace RenProfileConsole
 
                     try
                     {
+                        // Handle REG_MULTI_SZ (array of strings) - some registry values store multiple paths
                         if (key.GetValueKind(name) == RegistryValueKind.MultiString)
                         {
                             string[] oldValues = (string[])key.GetValue(name);
                             string[] newValues = oldValues.Select(value => Regex.Replace(value, pattern, newDir, RegexOptions.IgnoreCase)).ToArray();
 
+                            // Only update if the replacement actually changed something
                             if (!newValues.SequenceEqual(oldValues))
                             {
                                 try
@@ -229,6 +250,8 @@ namespace RenProfileConsole
                                 }
                             }
                         }
+                        // Handle REG_SZ and REG_EXPAND_SZ (regular and expandable strings)
+                        // ExpandString is used for paths with environment variables like %USERPROFILE%
                         else if (key.GetValueKind(name) == RegistryValueKind.String || key.GetValueKind(name) == RegistryValueKind.ExpandString)
                         {
                             string oldValue = (string)key.GetValue(name);
@@ -254,6 +277,8 @@ namespace RenProfileConsole
                             }
                         }
 
+                        // Check if the value name itself contains the old path and needs renaming
+                        // (not just the value data, but the name of the registry entry)
                         string newValueName = Regex.Replace(name, pattern, newDir, RegexOptions.IgnoreCase);
 
                         if (newValueName != name)
@@ -282,6 +307,8 @@ namespace RenProfileConsole
                     }
                 }
 
+                // Registry subkey names can't contain backslashes, but paths are sometimes URL-encoded
+                // in key names, so we need to match %5C (the URL encoding for backslash) instead of \
                 string keypattern = pattern.Replace(@"\", @"%5C");
                 string keyNewDir = newDir.Replace(@"\", @"%5C");
                 foreach (string keyName in key.GetSubKeyNames())

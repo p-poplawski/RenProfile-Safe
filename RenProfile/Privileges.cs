@@ -2,15 +2,19 @@
 
 namespace RenProfileConsole
 {
+    /// <summary>
+    /// Provides functionality to request and enable Windows privileges for the current process.
+    /// </summary>
     public class Privileges
     {
         /// <summary>
-        /// Request extra privileges for the process
+        /// Enables a specific privilege for the current process.
         /// </summary>
-        /// <param name="privilege">The string value specifying the desired privilege as specified in the Windows headers</param>
-        /// <returns></returns>
+        /// <param name="privilege">The privilege name as defined in Windows headers (e.g., "SeRestorePrivilege")</param>
+        /// <returns>True if the privilege was successfully enabled; otherwise, false</returns>
         public static bool EnablePrivileges(string privilege)
         {
+            // First, convert the privilege name string to a LUID (Locally Unique Identifier)
             NativeMethods.Privileges.LUID luid = new NativeMethods.Privileges.LUID();
 
             if (!NativeMethods.Privileges.LookupPrivilegeValue(null, privilege, ref luid))
@@ -18,6 +22,7 @@ namespace RenProfileConsole
                 return false;
             }
 
+            // Build the TOKEN_PRIVILEGES structure to tell Windows which privilege to enable
             NativeMethods.Privileges.TOKEN_PRIVILEGES tokenPrivileges = new NativeMethods.Privileges.TOKEN_PRIVILEGES();
 
             tokenPrivileges.PrivilegeCount = 1;
@@ -25,6 +30,7 @@ namespace RenProfileConsole
             tokenPrivileges.Privileges[0].Attributes = NativeMethods.Privileges.SE_PRIVILEGE_ENABLED;
             tokenPrivileges.Privileges[0].Luid = luid;
 
+            // Get a handle to the current process
             IntPtr hProc = NativeMethods.Process.GetCurrentProcess();
 
             if (hProc == IntPtr.Zero)
@@ -32,6 +38,7 @@ namespace RenProfileConsole
                 return false;
             }
 
+            // Open the process token with permission to adjust privileges
             if (!NativeMethods.Process.OpenProcessToken(
                     hProc,
                     (uint)NativeMethods.Process.TokenAccess.AdjustPrivileges,
@@ -42,6 +49,8 @@ namespace RenProfileConsole
 
             try
             {
+                // Actually enable the privilege on the token
+                // Using the simpler overload since we don't need to retrieve the previous state
                 return NativeMethods.Privileges.AdjustTokenPrivileges(
                     hToken,
                     false,
@@ -52,6 +61,7 @@ namespace RenProfileConsole
             }
             finally
             {
+                // Always close the token handle to avoid leaks, even if AdjustTokenPrivileges fails
                 NativeMethods.Process.CloseHandle(hToken);
             }
         }
