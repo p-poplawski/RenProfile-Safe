@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace RenProfileConsole
 {
@@ -19,7 +14,7 @@ namespace RenProfileConsole
             NativeMethods.Privileges.LUID luid = new NativeMethods.Privileges.LUID();
             if (NativeMethods.Privileges.LookupPrivilegeValue(null, privilege, ref luid))
             {
-                var tokenPrivileges = new NativeMethods.Privileges.TOKEN_PRIVILEGES();
+                NativeMethods.Privileges.TOKEN_PRIVILEGES tokenPrivileges = new NativeMethods.Privileges.TOKEN_PRIVILEGES();
                 tokenPrivileges.PrivilegeCount = 1;
                 tokenPrivileges.Privileges = new NativeMethods.Privileges.LUID_AND_ATTRIBUTES[1];
                 tokenPrivileges.Privileges[0].Attributes = NativeMethods.Privileges.SE_PRIVILEGE_ENABLED;

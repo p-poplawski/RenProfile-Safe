@@ -1,14 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using Microsoft.Win32;
+using System;
 using System.IO;
 using System.Linq;
-using System.Runtime.Remoting.Messaging;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using Microsoft.Win32;
 
 namespace RenProfileConsole
 {
@@ -16,17 +11,18 @@ namespace RenProfileConsole
     /// A command line tool to rename a user profile by updating all references to the profile folder in the registry
     /// and renaming the folder.
     /// </summary>
-    class Program
+    internal class Program
     {
         //- Define Variables
         public static bool logErrs = false;
         public static int errors = 0;
         public static int successful = 0;
         public static int processed = 0;
+
         //- Define Paths
-        public static String oldDir="";
-        public static String newDir="";
-        public static String errPath="";
+        public static String oldDir = "";
+        public static String newDir = "";
+        public static String errPath = "";
 
         private static void Main(string[] args)
         {
@@ -58,8 +54,9 @@ namespace RenProfileConsole
                 else if (Directory.Exists(newDir)) { Console.WriteLine("New user profile path already exists. Use another name."); ExitConsole(-1); return; }
             }
             catch (Exception ex)
-            { 
-                if (logErrs) { LogError(ex.ToString()); Console.WriteLine("Unexpected error occurred, cannot continue. Check error log."); } ExitConsole(-1); return; 
+            {
+                if (logErrs) { LogError(ex.ToString()); Console.WriteLine("Unexpected error occurred, cannot continue. Check error log."); }
+                ExitConsole(-1); return;
             }
 
             //- No errors and parameters are all as expected.
@@ -77,7 +74,6 @@ namespace RenProfileConsole
             // is restricted without requesting extra privilges.
             if (Privileges.EnablePrivileges("SeRestorePrivilege"))
             {
-
                 int loadCode = RegistryUtils.LoadUserHive($"{oldDir}\\NTUSER.dat", tempUserHiveName);
 
                 using (RegistryKey userHive = Registry.Users.OpenSubKey(tempUserHiveName))
@@ -108,7 +104,7 @@ namespace RenProfileConsole
             }
         }
 
-        static void ExitConsole(int exitCode)
+        private static void ExitConsole(int exitCode)
         {
             Console.WriteLine("");
             Console.WriteLine("Exit code is " + exitCode + " (-1=fatal error, 0=fail, 1=success");
@@ -117,20 +113,19 @@ namespace RenProfileConsole
             Environment.Exit(exitCode);
         }
 
-        static void LogError(string errorMessage)
+        private static void LogError(string errorMessage)
         {
             try
             {
                 //- Condition ? True : False
-                using (var file = File.Exists(errPath) ? File.Open(errPath, FileMode.Append) : File.Open(errPath, FileMode.CreateNew))
-                using (var sw = new StreamWriter(file))
+                using (FileStream file = File.Exists(errPath) ? File.Open(errPath, FileMode.Append) : File.Open(errPath, FileMode.CreateNew))
+                using (StreamWriter sw = new StreamWriter(file))
                 { sw.WriteLine($"{DateTime.Now.ToString()}: {errorMessage} \n==========="); }
             }
             catch { /*Error writing to error log*/}
         }
 
-
-        static void UpdateKey(RegistryKey key, string oldDir, string newDir)
+        private static void UpdateKey(RegistryKey key, string oldDir, string newDir)
         {
             try
             {

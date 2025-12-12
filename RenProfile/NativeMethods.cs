@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace RenProfileConsole
 {
@@ -16,6 +13,7 @@ namespace RenProfileConsole
             internal struct TOKEN_PRIVILEGES
             {
                 public int PrivilegeCount;
+
                 [MarshalAs(UnmanagedType.ByValArray, SizeConst = 1)]
                 public LUID_AND_ATTRIBUTES[] Privileges;
             }
@@ -29,7 +27,6 @@ namespace RenProfileConsole
 
             internal struct LUID
             {
-
                 public UInt32 LowPart;
                 public Int32 HighPart;
             }
@@ -37,7 +34,7 @@ namespace RenProfileConsole
             [DllImport("advapi32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool AdjustTokenPrivileges(IntPtr hTok,
-                [MarshalAs(UnmanagedType.Bool)]bool DisableAllPrivileges,
+                [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
                 ref TOKEN_PRIVILEGES NewState,
                 UInt32 BufferLengthInBytes,
                 ref TOKEN_PRIVILEGES PreviousState,
@@ -46,7 +43,7 @@ namespace RenProfileConsole
             [DllImport("advapi32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
             internal static extern bool AdjustTokenPrivileges(IntPtr hTok,
-                [MarshalAs(UnmanagedType.Bool)]bool DisableAllPrivileges,
+                [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
                 ref TOKEN_PRIVILEGES NewState,
                 UInt32 BufferLengthInBytes,
                 IntPtr PreviousState,

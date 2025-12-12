@@ -1,9 +1,5 @@
 ﻿using Microsoft.Win32;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace RenProfileConsole
@@ -54,7 +50,6 @@ namespace RenProfileConsole
         {
             using (RegistryKey target = root.CreateSubKey(newName))
             {
-
                 foreach (string name in source.GetValueNames())
                 {
                     target.SetValue(name, source.GetValue(name), source.GetValueKind(name));
