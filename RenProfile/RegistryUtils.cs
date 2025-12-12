@@ -34,7 +34,6 @@ namespace RenProfileConsole
         public static void RenameValue(this RegistryKey key, string oldName, string newName)
         {
             key.SetValue(newName, key.GetValue(oldName), key.GetValueKind(oldName));
-
             key.DeleteValue(oldName);
         }
 

@@ -214,7 +214,15 @@ namespace RenProfileConsole
                                     Console.WriteLine(String.Join(":", newValues));
                                     successful++;
                                 }
-                                catch (Exception ex) { if (logErrs) { LogError($"Error accessing/writing {name}\n{ex.ToString()}"); } Console.WriteLine($"Error setting: {newValues}"); errors++; }
+                                catch (Exception ex)
+                                {
+                                    if (logErrs)
+                                    {
+                                        LogError($"Error accessing/writing {name}\n{ex.ToString()}");
+                                    }
+                                    Console.WriteLine($"Error setting: {newValues}");
+                                    errors++;
+                                }
                             }
                         }
                         else if (key.GetValueKind(name) == RegistryValueKind.String || key.GetValueKind(name) == RegistryValueKind.ExpandString)
@@ -230,7 +238,15 @@ namespace RenProfileConsole
                                     Console.WriteLine($"Set: {newValue}");
                                     successful++;
                                 }
-                                catch (Exception ex) { if (logErrs) { LogError($"Error accessing/writing {name}\n{ex.ToString()}"); } Console.WriteLine($"Error setting: {newValue}"); errors++; }
+                                catch (Exception ex)
+                                {
+                                    if (logErrs)
+                                    {
+                                        LogError($"Error accessing/writing {name}\n{ex.ToString()}");
+                                    }
+                                    Console.WriteLine($"Error setting: {newValue}");
+                                    errors++;
+                                }
                             }
                         }
 
@@ -247,7 +263,15 @@ namespace RenProfileConsole
                             catch { Console.WriteLine($"Error renaming: {newValueName}"); errors++; }
                         }
                     }
-                    catch (Exception ex) { if (logErrs) { LogError($"Error accessing/writing {name}\n{ex.ToString()}"); } Console.WriteLine($"Error accessing: {name}"); errors++; }
+                    catch (Exception ex)
+                    {
+                        if (logErrs)
+                        {
+                            LogError($"Error accessing/writing {name}\n{ex.ToString()}");
+                        }
+                        Console.WriteLine($"Error accessing: {name}");
+                        errors++;
+                    }
                 }
 
                 string keypattern = pattern.Replace(@"\", @"%5C");
@@ -266,11 +290,26 @@ namespace RenProfileConsole
                             Console.WriteLine($"Updated: {newKeyName}");
                             successful++;
                         }
-                        catch (Exception ex) { if (logErrs) { LogError($"Error accessing/writing {keyName}\n{ex.ToString()}"); } Console.WriteLine($"Error updating: {newKeyName}"); errors++; }
+                        catch (Exception ex)
+                        {
+                            if (logErrs)
+                            {
+                                LogError($"Error accessing/writing {keyName}\n{ex.ToString()}");
+                            }
+                            Console.WriteLine($"Error updating: {newKeyName}");
+                            errors++;
+                        }
                     }
                 }
             }
-            catch (Exception ex) { if (logErrs) { LogError($"Error accessing/writing {key.ToString()}\n{ex.ToString()}"); } errors++; }
+            catch (Exception ex)
+            {
+                if (logErrs)
+                {
+                    LogError($"Error accessing/writing {key.ToString()}\n{ex.ToString()}");
+                }
+                errors++;
+            }
         }
     }
 }
