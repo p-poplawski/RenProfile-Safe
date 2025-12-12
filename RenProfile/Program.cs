@@ -15,12 +15,14 @@ namespace RenProfileConsole
     {
         //- Define Variables
         public static bool logErrs = false;
+
         public static int errors = 0;
         public static int successful = 0;
         public static int processed = 0;
 
         //- Define Paths
         public static String oldDir = "";
+
         public static String newDir = "";
         public static String errPath = "";
 
@@ -29,34 +31,89 @@ namespace RenProfileConsole
             try
             {
                 //- Parameter error checking
-                if (args.Length == 0) { Console.WriteLine("Missing all parameters."); ExitConsole(-1); return; }
+                if (args.Length == 0)
+                {
+                    Console.WriteLine("Missing all parameters.");
+                    ExitConsole(-1);
+                    return;
+                }
                 else if (args.Length == 1)
                 {
-                    if (args[0] == "?") { Console.WriteLine(@"Syntax: C:\Full\Path\To\Profile C:\Path\To\Desired\Profile C:\Optional\Path\To\Write\Errors.txt"); ExitConsole(1); return; }
-                    else { Console.WriteLine("Missing 1 parameter."); ExitConsole(-1); return; }
+                    if (args[0] == "?")
+                    {
+                        Console.WriteLine(@"Syntax: C:\Full\Path\To\Profile C:\Path\To\Desired\Profile C:\Optional\Path\To\Write\Errors.txt");
+                        ExitConsole(1);
+                        return;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Missing 1 parameter.");
+                        ExitConsole(-1);
+                        return;
+                    }
                 }
                 else if (args.Length == 3)
                 {
-                    errPath = args[2]; if (!String.IsNullOrWhiteSpace(errPath) || errPath.Length > 4) { logErrs = true; }
-                    else { Console.WriteLine("Error log was specified but path is invalid."); ExitConsole(-1); return; }
+                    errPath = args[2];
+
+                    if (!String.IsNullOrWhiteSpace(errPath) || errPath.Length > 4)
+                    {
+                        logErrs = true;
+                    }
+                    else
+                    {
+                        Console.WriteLine("Error log was specified but path is invalid.");
+                        ExitConsole(-1);
+                        return;
+                    }
                 }
                 else if (args.Length > 3)
-                { Console.WriteLine("Missing 1 parameter."); ExitConsole(-1); }
+                {
+                    Console.WriteLine("Missing 1 parameter.");
+                    ExitConsole(-1);
+                    return;
+                }
 
                 //- Set variables
                 oldDir = args[0];
                 newDir = args[1];
 
                 //- Path error checking
-                if (String.IsNullOrWhiteSpace(oldDir) || oldDir.Length < 4) { Console.WriteLine("Old user profile path is invalid."); ExitConsole(-1); return; }
-                else if (String.IsNullOrWhiteSpace(oldDir) || oldDir.Length < 4) { Console.WriteLine("New user profile path is invalid."); ExitConsole(-1); return; }
-                else if (!Directory.Exists(oldDir)) { Console.WriteLine("Old user profile path does not exist."); ExitConsole(-1); return; }
-                else if (Directory.Exists(newDir)) { Console.WriteLine("New user profile path already exists. Use another name."); ExitConsole(-1); return; }
+                if (String.IsNullOrWhiteSpace(oldDir) || oldDir.Length < 4)
+                {
+                    Console.WriteLine("Old user profile path is invalid.");
+                    ExitConsole(-1);
+                    return;
+                }
+                else if (String.IsNullOrWhiteSpace(newDir) || newDir.Length < 4)
+                {
+                    Console.WriteLine("New user profile path is invalid.");
+                    ExitConsole(-1);
+                    return;
+                }
+                else if (!Directory.Exists(oldDir))
+                {
+                    Console.WriteLine("Old user profile path does not exist.");
+                    ExitConsole(-1);
+                    return;
+                }
+                else if (Directory.Exists(newDir))
+                {
+                    Console.WriteLine("New user profile path already exists. Use another name.");
+                    ExitConsole(-1);
+                    return;
+                }
             }
             catch (Exception ex)
             {
-                if (logErrs) { LogError(ex.ToString()); Console.WriteLine("Unexpected error occurred, cannot continue. Check error log."); }
-                ExitConsole(-1); return;
+                if (logErrs)
+                {
+                    LogError(ex.ToString());
+                    Console.WriteLine("Unexpected error occurred, cannot continue. Check error log.");
+                }
+
+                ExitConsole(-1);
+                return;
             }
 
             //- No errors and parameters are all as expected.

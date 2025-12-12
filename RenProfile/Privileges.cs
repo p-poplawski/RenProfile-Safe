@@ -12,9 +12,11 @@ namespace RenProfileConsole
         public static bool EnablePrivileges(string privilege)
         {
             NativeMethods.Privileges.LUID luid = new NativeMethods.Privileges.LUID();
+
             if (NativeMethods.Privileges.LookupPrivilegeValue(null, privilege, ref luid))
             {
                 NativeMethods.Privileges.TOKEN_PRIVILEGES tokenPrivileges = new NativeMethods.Privileges.TOKEN_PRIVILEGES();
+
                 tokenPrivileges.PrivilegeCount = 1;
                 tokenPrivileges.Privileges = new NativeMethods.Privileges.LUID_AND_ATTRIBUTES[1];
                 tokenPrivileges.Privileges[0].Attributes = NativeMethods.Privileges.SE_PRIVILEGE_ENABLED;
@@ -24,12 +26,22 @@ namespace RenProfileConsole
 
                 if (hProc != null)
                 {
-                    if (NativeMethods.Process.OpenProcessToken(hProc, (uint)NativeMethods.Process.TokenAccess.AdjustPrivileges, out IntPtr hToken))
+                    if (NativeMethods.Process.OpenProcessToken(
+                        hProc,
+                        (uint)NativeMethods.Process.TokenAccess.AdjustPrivileges,
+                        out IntPtr hToken))
                     {
-                        return NativeMethods.Privileges.AdjustTokenPrivileges(hToken, false, ref tokenPrivileges, 0, IntPtr.Zero, IntPtr.Zero);
+                        return NativeMethods.Privileges.AdjustTokenPrivileges(
+                            hToken,
+                            false,
+                            ref tokenPrivileges,
+                            0,
+                            IntPtr.Zero,
+                            IntPtr.Zero);
                     }
                 }
             }
+
             return false;
         }
     }

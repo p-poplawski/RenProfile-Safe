@@ -33,7 +33,8 @@ namespace RenProfileConsole
 
             [DllImport("advapi32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool AdjustTokenPrivileges(IntPtr hTok,
+            internal static extern bool AdjustTokenPrivileges(
+                IntPtr hTok,
                 [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
                 ref TOKEN_PRIVILEGES NewState,
                 UInt32 BufferLengthInBytes,
@@ -42,7 +43,8 @@ namespace RenProfileConsole
 
             [DllImport("advapi32.dll", SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool AdjustTokenPrivileges(IntPtr hTok,
+            internal static extern bool AdjustTokenPrivileges(
+                IntPtr hTok,
                 [MarshalAs(UnmanagedType.Bool)] bool DisableAllPrivileges,
                 ref TOKEN_PRIVILEGES NewState,
                 UInt32 BufferLengthInBytes,
@@ -51,7 +53,10 @@ namespace RenProfileConsole
 
             [DllImport("advapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
             [return: MarshalAs(UnmanagedType.Bool)]
-            internal static extern bool LookupPrivilegeValue(string lpsystemname, string lpname, [MarshalAs(UnmanagedType.Struct)] ref LUID lpLuid);
+            internal static extern bool LookupPrivilegeValue(
+                string lpsystemname,
+                string lpname,
+                [MarshalAs(UnmanagedType.Struct)] ref LUID lpLuid);
         }
 
         internal class Process
@@ -66,7 +71,10 @@ namespace RenProfileConsole
             internal static extern IntPtr GetCurrentProcess();
 
             [DllImport("advapi32.dll", CharSet = CharSet.Auto, SetLastError = true)]
-            internal static extern bool OpenProcessToken(IntPtr processHandle, uint desiredAccess, out IntPtr tokenHandle);
+            internal static extern bool OpenProcessToken(
+                IntPtr processHandle,
+                uint desiredAccess,
+                out IntPtr tokenHandle);
         }
 
         internal class Registry
@@ -83,7 +91,10 @@ namespace RenProfileConsole
         internal class FileSystem
         {
             [DllImport("kernel32.dll", SetLastError = true)]
-            public static extern int GetShortPathName(String pathName, StringBuilder shortName, int cbShortName);
+            public static extern int GetShortPathName(
+                String pathName,
+                StringBuilder shortName,
+                int cbShortName);
         }
     }
 }
