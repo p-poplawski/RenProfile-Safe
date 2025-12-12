@@ -56,7 +56,10 @@ namespace RenProfileConsole
                 {
                     errPath = args[2];
 
-                    if (!String.IsNullOrWhiteSpace(errPath) || errPath.Length > 4)
+                    if (!String.IsNullOrWhiteSpace(errPath)
+                        && errPath.Length > 4
+                        && errPath.IndexOfAny(Path.GetInvalidPathChars()) == -1
+                        && Directory.Exists(Path.GetDirectoryName(errPath)))
                     {
                         logErrs = true;
                     }
