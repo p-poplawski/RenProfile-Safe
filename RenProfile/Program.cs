@@ -34,7 +34,7 @@ namespace RenProfileConsole
                 if (args.Length == 0)
                 {
                     Console.WriteLine("Missing all parameters.");
-                    ExitConsole(-1);
+                    ExitConsole(1);
                     return;
                 }
                 else if (args.Length == 1)
@@ -42,13 +42,13 @@ namespace RenProfileConsole
                     if (args[0] == "?")
                     {
                         Console.WriteLine(@"Syntax: C:\Full\Path\To\Profile C:\Path\To\Desired\Profile C:\Optional\Path\To\Write\Errors.txt");
-                        ExitConsole(1);
+                        ExitConsole();
                         return;
                     }
                     else
                     {
                         Console.WriteLine("Missing 1 parameter.");
-                        ExitConsole(-1);
+                        ExitConsole(1);
                         return;
                     }
                 }
@@ -68,14 +68,14 @@ namespace RenProfileConsole
                     else
                     {
                         Console.WriteLine("Error log was specified but path is invalid.");
-                        ExitConsole(-1);
+                        ExitConsole(1);
                         return;
                     }
                 }
                 else if (args.Length > 3)
                 {
                     Console.WriteLine("Missing 1 parameter.");
-                    ExitConsole(-1);
+                    ExitConsole(1);
                     return;
                 }
 
@@ -84,25 +84,25 @@ namespace RenProfileConsole
                 if (String.IsNullOrWhiteSpace(oldDir) || oldDir.Length < 4)
                 {
                     Console.WriteLine("Old user profile path is invalid.");
-                    ExitConsole(-1);
+                    ExitConsole(1);
                     return;
                 }
                 else if (String.IsNullOrWhiteSpace(newDir) || newDir.Length < 4)
                 {
                     Console.WriteLine("New user profile path is invalid.");
-                    ExitConsole(-1);
+                    ExitConsole(1);
                     return;
                 }
                 else if (!Directory.Exists(oldDir))
                 {
                     Console.WriteLine("Old user profile path does not exist.");
-                    ExitConsole(-1);
+                    ExitConsole(1);
                     return;
                 }
                 else if (Directory.Exists(newDir))
                 {
                     Console.WriteLine("New user profile path already exists. Use another name.");
-                    ExitConsole(-1);
+                    ExitConsole(1);
                     return;
                 }
             }
@@ -114,7 +114,7 @@ namespace RenProfileConsole
                     Console.WriteLine("Unexpected error occurred, cannot continue. Check error log.");
                 }
 
-                ExitConsole(-1);
+                ExitConsole(1);
                 return;
             }
 
@@ -157,23 +157,23 @@ namespace RenProfileConsole
                 try { Directory.Move(oldDir, newDir); }
                 catch { Console.WriteLine("Error renaming physical profile directories, another process might have a lock still."); }
 
-                ExitConsole(1);
+                ExitConsole();
             }
             else
             {
                 Console.WriteLine("Load key privilege not granted.");
-                ExitConsole(-1);
+                ExitConsole(1);
             }
         }
 
         /// <summary>
         /// Displays the exit code and waits for user input before terminating the application.
         /// </summary>
-        /// <param name="exitCode">-1 for fatal error, 0 for failure, 1 for success</param>
-        private static void ExitConsole(int exitCode)
+        /// <param name="exitCode">Code to exit with. Default: 0 (Success)</param>
+        private static void ExitConsole(int exitCode = 0)
         {
             Console.WriteLine("");
-            Console.WriteLine("Exit code is " + exitCode + " (-1=fatal error, 0=fail, 1=success");
+            Console.WriteLine("Exit code is " + exitCode + " (0=success)");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
             Environment.Exit(exitCode);
