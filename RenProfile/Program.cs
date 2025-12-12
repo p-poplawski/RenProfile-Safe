@@ -174,7 +174,7 @@ namespace RenProfileConsole
             Environment.Exit(exitCode);
         }
 
-        private static void LogError(string errorMessage)
+        internal static void LogError(string errorMessage)
         {
             try
             {

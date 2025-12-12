@@ -22,9 +22,14 @@ namespace RenProfileConsole
                         key.IterateKeys(action);
                     }
                 }
-                catch (Exception)
+                catch (Exception ex)
                 {
-                    // Swallow exception, continue
+                    Console.WriteLine($"Failed to open subkey '{keyname}' under '{root.Name}': {ex.Message}");
+
+                    if (Program.logErrs)
+                    {
+                        Program.LogError($"Failed to open subkey '{keyname}' under '{root.Name}'\n{ex}");
+                    }
                 }
             });
 
