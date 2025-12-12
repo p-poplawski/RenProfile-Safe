@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace RenProfileConsole
 {
@@ -200,7 +201,7 @@ namespace RenProfileConsole
                 foreach (string name in names)
                 {
                     if (String.IsNullOrWhiteSpace(name)) { continue; }
-                    processed++;
+                    Interlocked.Increment(ref processed);
 
                     try
                     {
@@ -215,7 +216,7 @@ namespace RenProfileConsole
                                 {
                                     key.SetValue(name, newValues);
                                     Console.WriteLine(String.Join(":", newValues));
-                                    successful++;
+                                    Interlocked.Increment(ref successful);
                                 }
                                 catch (Exception ex)
                                 {
@@ -224,7 +225,7 @@ namespace RenProfileConsole
                                         LogError($"Error accessing/writing {name}\n{ex.ToString()}");
                                     }
                                     Console.WriteLine($"Error setting: {newValues}");
-                                    errors++;
+                                    Interlocked.Increment(ref errors);
                                 }
                             }
                         }
@@ -239,7 +240,7 @@ namespace RenProfileConsole
                                 {
                                     key.SetValue(name, newValue);
                                     Console.WriteLine($"Set: {newValue}");
-                                    successful++;
+                                    Interlocked.Increment(ref successful);
                                 }
                                 catch (Exception ex)
                                 {
@@ -248,7 +249,7 @@ namespace RenProfileConsole
                                         LogError($"Error accessing/writing {name}\n{ex.ToString()}");
                                     }
                                     Console.WriteLine($"Error setting: {newValue}");
-                                    errors++;
+                                    Interlocked.Increment(ref errors);
                                 }
                             }
                         }
@@ -261,9 +262,13 @@ namespace RenProfileConsole
                             {
                                 key.RenameValue(name, newValueName);
                                 Console.WriteLine($"Renamed: {newValueName}");
-                                successful++;
+                                Interlocked.Increment(ref successful);
                             }
-                            catch { Console.WriteLine($"Error renaming: {newValueName}"); errors++; }
+                            catch
+                            {
+                                Console.WriteLine($"Error renaming: {newValueName}");
+                                Interlocked.Increment(ref errors);
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -273,7 +278,7 @@ namespace RenProfileConsole
                             LogError($"Error accessing/writing {name}\n{ex.ToString()}");
                         }
                         Console.WriteLine($"Error accessing: {name}");
-                        errors++;
+                        Interlocked.Increment(ref errors);
                     }
                 }
 
@@ -282,7 +287,7 @@ namespace RenProfileConsole
                 foreach (string keyName in key.GetSubKeyNames())
                 {
                     if (String.IsNullOrWhiteSpace(keyName)) { continue; }
-                    processed++;
+                    Interlocked.Increment(ref processed);
 
                     string newKeyName = Regex.Replace(keyName, keypattern, keyNewDir, RegexOptions.IgnoreCase);
                     if (keyName != newKeyName)
@@ -291,7 +296,7 @@ namespace RenProfileConsole
                         {
                             key.RenameSubKey(keyName, newKeyName);
                             Console.WriteLine($"Updated: {newKeyName}");
-                            successful++;
+                            Interlocked.Increment(ref successful);
                         }
                         catch (Exception ex)
                         {
@@ -300,7 +305,7 @@ namespace RenProfileConsole
                                 LogError($"Error accessing/writing {keyName}\n{ex.ToString()}");
                             }
                             Console.WriteLine($"Error updating: {newKeyName}");
-                            errors++;
+                            Interlocked.Increment(ref errors);
                         }
                     }
                 }
@@ -311,7 +316,7 @@ namespace RenProfileConsole
                 {
                     LogError($"Error accessing/writing {key.ToString()}\n{ex.ToString()}");
                 }
-                errors++;
+                Interlocked.Increment(ref errors);
             }
         }
     }

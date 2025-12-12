@@ -75,6 +75,10 @@ namespace RenProfileConsole
                 IntPtr processHandle,
                 uint desiredAccess,
                 out IntPtr tokenHandle);
+
+            [DllImport("kernel32.dll", SetLastError = true)]
+            [return: MarshalAs(UnmanagedType.Bool)]
+            internal static extern bool CloseHandle(IntPtr hObject);
         }
 
         internal class Registry

@@ -13,36 +13,47 @@ namespace RenProfileConsole
         {
             NativeMethods.Privileges.LUID luid = new NativeMethods.Privileges.LUID();
 
-            if (NativeMethods.Privileges.LookupPrivilegeValue(null, privilege, ref luid))
+            if (!NativeMethods.Privileges.LookupPrivilegeValue(null, privilege, ref luid))
             {
-                NativeMethods.Privileges.TOKEN_PRIVILEGES tokenPrivileges = new NativeMethods.Privileges.TOKEN_PRIVILEGES();
-
-                tokenPrivileges.PrivilegeCount = 1;
-                tokenPrivileges.Privileges = new NativeMethods.Privileges.LUID_AND_ATTRIBUTES[1];
-                tokenPrivileges.Privileges[0].Attributes = NativeMethods.Privileges.SE_PRIVILEGE_ENABLED;
-                tokenPrivileges.Privileges[0].Luid = luid;
-
-                IntPtr hProc = NativeMethods.Process.GetCurrentProcess();
-
-                if (hProc != null)
-                {
-                    if (NativeMethods.Process.OpenProcessToken(
-                        hProc,
-                        (uint)NativeMethods.Process.TokenAccess.AdjustPrivileges,
-                        out IntPtr hToken))
-                    {
-                        return NativeMethods.Privileges.AdjustTokenPrivileges(
-                            hToken,
-                            false,
-                            ref tokenPrivileges,
-                            0,
-                            IntPtr.Zero,
-                            IntPtr.Zero);
-                    }
-                }
+                return false;
             }
 
-            return false;
+            NativeMethods.Privileges.TOKEN_PRIVILEGES tokenPrivileges = new NativeMethods.Privileges.TOKEN_PRIVILEGES();
+
+            tokenPrivileges.PrivilegeCount = 1;
+            tokenPrivileges.Privileges = new NativeMethods.Privileges.LUID_AND_ATTRIBUTES[1];
+            tokenPrivileges.Privileges[0].Attributes = NativeMethods.Privileges.SE_PRIVILEGE_ENABLED;
+            tokenPrivileges.Privileges[0].Luid = luid;
+
+            IntPtr hProc = NativeMethods.Process.GetCurrentProcess();
+
+            if (hProc == IntPtr.Zero)
+            {
+                return false;
+            }
+
+            if (!NativeMethods.Process.OpenProcessToken(
+                    hProc,
+                    (uint)NativeMethods.Process.TokenAccess.AdjustPrivileges,
+                    out IntPtr hToken))
+            {
+                return false;
+            }
+
+            try
+            {
+                return NativeMethods.Privileges.AdjustTokenPrivileges(
+                    hToken,
+                    false,
+                    ref tokenPrivileges,
+                    0,
+                    IntPtr.Zero,
+                    IntPtr.Zero);
+            }
+            finally
+            {
+                NativeMethods.Process.CloseHandle(hToken);
+            }
         }
     }
 }
