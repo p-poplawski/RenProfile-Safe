@@ -38,11 +38,13 @@ namespace RenProfileConsole
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine($"Failed to open subkey '{keyname}' under '{root.Name}': {ex.Message}");
+                    string errMsg = $"Failed to open subkey '{keyname}' under '{root.Name}': {ex.Message}";
+
+                    Console.WriteLine(errMsg);
 
                     if (Program.logErrs)
                     {
-                        Program.LogError($"Failed to open subkey '{keyname}' under '{root.Name}'\n{ex}");
+                        Program.LogError(errMsg);
                     }
                 }
             });

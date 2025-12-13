@@ -41,7 +41,7 @@ namespace RenProfileConsole
                 {
                     if (args[0] == "?")
                     {
-                        Console.WriteLine(@"Syntax: C:\Full\Path\To\Profile C:\Path\To\Desired\Profile C:\Optional\Path\To\Write\Errors.txt");
+                        Console.WriteLine(@"Syntax: RenProfile.exe C:\Full\Path\To\OldProfile C:\Full\Path\To\NewProfile C:\Optional\Path\To\Log\Errors.txt");
                         ExitConsole();
                     }
                     else
@@ -118,6 +118,35 @@ namespace RenProfileConsole
         /// </summary>
         public static void PerformProfileRename()
         {
+            // Ensure we can rename the folder before touching the registry
+            string tempTestDir = newDir + ".tmp_test_move";
+
+            try
+            {
+                if (Directory.Exists(tempTestDir))
+                {
+                    Console.WriteLine($"Temporary test directory already exists: {tempTestDir}");
+                    Console.WriteLine("Delete or rename that folder and try again.");
+                    ExitConsole(1);
+                }
+
+                Directory.Move(oldDir, tempTestDir);
+                Directory.Move(tempTestDir, oldDir);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("Unable to rename the profile directory. The folder may be in use or you may not have sufficient permissions.");
+                Console.WriteLine($"Error details: {ex.Message}");
+                Console.WriteLine("Try running this tool again from Safe Mode as an administrator account that is NOT the owner of the source user profile folder.");
+
+                if (logErrs)
+                {
+                    LogError($"Test move failed when renaming '{oldDir}' to '{tempTestDir}' and back.\n{ex}");
+                }
+
+                ExitConsole(1);
+            }
+
             // Create a temporary unique name to mount the target user's registry hive
             string tempUserHiveName = $"__tmpMoveUserProfile";
 
@@ -146,7 +175,16 @@ namespace RenProfileConsole
 
                 // Rename the actual profile directory on disk
                 try { Directory.Move(oldDir, newDir); }
-                catch { Console.WriteLine("Error renaming physical profile directories, another process might have a lock still."); }
+                catch (Exception ex)
+                {
+                    Console.WriteLine("Error renaming physical profile directories, another process might have a lock still.");
+                    Console.WriteLine($"Error details: {ex.Message}");
+
+                    if (logErrs)
+                    {
+                        LogError($"Final move failed when renaming '{oldDir}' to '{newDir}'.\n{ex}");
+                    }
+                }
 
                 ExitConsole();
             }
