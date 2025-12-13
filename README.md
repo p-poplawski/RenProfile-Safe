@@ -25,7 +25,7 @@ RenProfile C:\Users\OldUserPath C:\Users\NewDesiredUserPath [LogFilePath]
 
 **After Running RenProfile:**
 
-Navigate to `C:\Users` and verify the user profile folder was renamed. If the folder wasn't renamed, it's likely due to NTFS permissions. In such cases, this is considered intended behavior—we will not change NTFS permissions for you due to the serious implications this could cause. You'll need to:
+Navigate to `C:\Users` and verify the user profile folder was renamed. If the folder wasn't renamed, it's likely due to NTFS permissions. In such cases, this is considered intended behavior - we will not change NTFS permissions for you due to the serious implications this could cause. You'll need to:
 
 1. Manually rename the folder
 2. Reboot the system
