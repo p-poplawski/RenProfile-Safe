@@ -11,19 +11,27 @@ RenProfile is a tool to rename the Windows profile folder path of your user acco
 Technically, there's no reason why this *should* cause problems, except in poorly written programs that don't properly check the user account path using relevant APIs (like `%userprofile%`) or programs that hard-code this path in settings files (which no program *should* ever do). While some developers might follow these bad practices, in my testing, this seems rare. (Windows Server environments, for example, offer built-in user profile migration.) In such cases, you might need to inform the affected program of the new path.
 
 ## Usage Info
-RenProfile is a CLI app. It must be executed from a a separate Administrator account and run from an Admin terminal / CMD Prompt. It takes 2 required arguments and 1 optional argument. No other steps are necessary, RenProfile handles the `Find & Replace All` operation in the registry and renames the physical target user folder. However, after the operation navigate to `C:\Users` and verify the user's profile folder name was changed. If, for some reason, the user's folder name was not changed, then manually rename the folder, and reboot. Why this could happen: Occasionally, RenProfile may fail to rename the physical user folder due to NTFS permissions; in such circumstances, this is considered intended behavior, as we will not change NTFS permissions for you due to the implications this could cause. This is for the administrator, ie you, to figure out, if it comes to that. (You may want to use the move command to do this, *if* RenProfile experiences this issue.)
 
-Required Arguments:<br/>
-RenProfile C:\Users\OldUserPath C:\Users\NewDesiredUserPath
+RenProfile is a CLI application that must be run from a separate Administrator account in an elevated Command Prompt or PowerShell. It takes 2 required arguments and 1 optional argument.
 
-Optional Arguments:<br/>
-3rd argument, specify log file path where you want the log file saved. Example: `C:\IT\RenProfile.log`
+**Basic Command:**
+```
+RenProfile C:\Users\OldUserPath C:\Users\NewDesiredUserPath [LogFilePath]
+```
 
-<br/>
+**Arguments:**
+- **Required:** Old and new profile paths (full absolute paths, not relative)
+- **Optional:** Log file path (e.g., `C:\IT\RenProfile.log`)
+
+**After Running RenProfile:**
+
+Navigate to `C:\Users` and verify the user profile folder was renamed. If the folder wasn't renamed, it's likely due to NTFS permissions. In such cases, this is considered intended behavior—we will not change NTFS permissions for you due to the serious implications this could cause. You'll need to:
+
+1. Manually rename the folder
+2. Reboot the system
+3. (Optional) Use the `move` command if you prefer a command-line approach
 
 **If RenProfile doesn't work or causes problems, follow these troubleshooting steps:**
-
-<br/>
 
 ## Troubleshooting Steps
 #### If renaming the user profile folder path causes issues with some applications, or otherwise doesn't work as expected, go through these troubleshooting steps. If you need to reverse the changes, you can find steps to do this further below.
