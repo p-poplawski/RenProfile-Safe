@@ -131,5 +131,36 @@ namespace RenProfileConsole
                 StringBuilder shortName,
                 int cbShortName);
         }
+
+        /// <summary>
+        /// Native methods for UI/system metrics.
+        /// </summary>
+        internal class User32
+        {
+            private const int SM_CLEANBOOT = 67;
+
+            [DllImport("user32.dll")]
+            private static extern int GetSystemMetrics(int nIndex);
+
+            internal static BootMode GetBootMode()
+            {
+                int value = GetSystemMetrics(SM_CLEANBOOT);
+                switch (value)
+                {
+                    case 1: return BootMode.FailSafe;
+                    case 2: return BootMode.FailSafeWithNetwork;
+                    default: return BootMode.Normal;
+                }
+            }
+
+            internal static bool IsSafeMode() => GetBootMode() != BootMode.Normal;
+        }
+
+        internal enum BootMode
+        {
+            Normal = 0,
+            FailSafe = 1,
+            FailSafeWithNetwork = 2
+        }
     }
 }

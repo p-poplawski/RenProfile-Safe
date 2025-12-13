@@ -29,6 +29,30 @@ namespace RenProfileConsole
         /// <param name="args">Command line arguments: oldProfilePath newProfilePath [errorLogPath]</param>
         private static void Main(string[] args)
         {
+            // Check Safe Mode and prompt if not
+            try
+            {
+                if (!NativeMethods.User32.IsSafeMode())
+                {
+                    Console.WriteLine("Warning: It is recommended to run this tool in Windows Safe Mode as an administrator (not the owner of the source profile).");
+                    Console.Write("Continue? (y/N) ");
+                    // Single keypress: 'y' or 'Y' continues; anything else treated as 'N'
+                    ConsoleKeyInfo key = Console.ReadKey(intercept: true);
+                    Console.WriteLine();
+
+                    // If the key is not 'Y' (covers Enter and any other key), exit with code 1
+                    if (key.Key != ConsoleKey.Y)
+                    {
+                        ExitConsole(1);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                // If detection fails, proceed but log
+                LogError($"Safe Mode detection failed. Proceeding.\n{ex}");
+            }
+
             // Validate command line arguments
             try
             {
@@ -41,7 +65,7 @@ namespace RenProfileConsole
                 {
                     if (args[0] == "?")
                     {
-                        Console.WriteLine(@"Syntax: RenProfile.exe C:\Full\Path\To\OldProfile C:\Full\Path\To\NewProfile C:\Optional\Path\To\Log\Errors.txt");
+                        Console.WriteLine(@"Syntax: RenProfile.exe C:\\Full\\Path\\To\\OldProfile C:\\Full\\Path\\To\\NewProfile C:\\Optional\\Path\\To\\Log\\Errors.txt");
                         ExitConsole();
                     }
                     else
@@ -250,7 +274,7 @@ namespace RenProfileConsole
         {
             try
             {
-                // Get the 8.3 short path format (e.g., "C:\Users\JOHNDO~1") because some registry
+                // Get the 8.3 short path format (e.g., "C:\\Users\\JOHNDO~1") because some registry
                 // entries may store paths in this format for backwards compatibility
                 StringBuilder sb = new StringBuilder(300);
                 int n = NativeMethods.FileSystem.GetShortPathName(oldDir, sb, 300);
