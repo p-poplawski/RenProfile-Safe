@@ -100,11 +100,8 @@ namespace RenProfileConsole
             }
             catch (Exception ex)
             {
-                if (logErrs)
-                {
-                    LogError(ex.ToString());
-                    Console.WriteLine("Unexpected error occurred, cannot continue. Check error log.");
-                }
+                LogError(ex.ToString());
+                Console.WriteLine("Unexpected error occurred, cannot continue. Check error log.");
 
                 ExitConsole(1);
             }
@@ -139,10 +136,7 @@ namespace RenProfileConsole
                 Console.WriteLine($"Error details: {ex.Message}");
                 Console.WriteLine("Try running this tool again from Safe Mode as an administrator account that is NOT the owner of the source user profile folder.");
 
-                if (logErrs)
-                {
-                    LogError($"Test move failed when renaming '{oldDir}' to '{tempTestDir}' and back.\n{ex}");
-                }
+                LogError($"Test move failed when renaming '{oldDir}' to '{tempTestDir}' and back.\n{ex}");
 
                 ExitConsole(1);
             }
@@ -180,10 +174,7 @@ namespace RenProfileConsole
                     Console.WriteLine("Error renaming physical profile directories, another process might have a lock still.");
                     Console.WriteLine($"Error details: {ex.Message}");
 
-                    if (logErrs)
-                    {
-                        LogError($"Final move failed when renaming '{oldDir}' to '{newDir}'.\n{ex}");
-                    }
+                    LogError($"Final move failed when renaming '{oldDir}' to '{newDir}'.\n{ex}");
                 }
 
                 ExitConsole();
@@ -214,6 +205,11 @@ namespace RenProfileConsole
         /// <param name="errorMessage">The error message to log</param>
         internal static void LogError(string errorMessage)
         {
+            if (!logErrs)
+            {
+                return;
+            }
+
             try
             {
                 using (FileStream file = File.Exists(errPath) ? File.Open(errPath, FileMode.Append) : File.Open(errPath, FileMode.CreateNew))
@@ -270,10 +266,7 @@ namespace RenProfileConsole
                                 }
                                 catch (Exception ex)
                                 {
-                                    if (logErrs)
-                                    {
-                                        LogError($"Error accessing/writing {name}\n{ex.ToString()}");
-                                    }
+                                    LogError($"Error accessing/writing {name}\n{ex.ToString()}");
                                     Console.WriteLine($"Error setting: {newValues}");
                                     Interlocked.Increment(ref errors);
                                 }
@@ -296,10 +289,7 @@ namespace RenProfileConsole
                                 }
                                 catch (Exception ex)
                                 {
-                                    if (logErrs)
-                                    {
-                                        LogError($"Error accessing/writing {name}\n{ex.ToString()}");
-                                    }
+                                    LogError($"Error accessing/writing {name}\n{ex.ToString()}");
                                     Console.WriteLine($"Error setting: {newValue}");
                                     Interlocked.Increment(ref errors);
                                 }
@@ -327,10 +317,7 @@ namespace RenProfileConsole
                     }
                     catch (Exception ex)
                     {
-                        if (logErrs)
-                        {
-                            LogError($"Error accessing/writing {name}\n{ex.ToString()}");
-                        }
+                        LogError($"Error accessing/writing {name}\n{ex.ToString()}");
                         Console.WriteLine($"Error accessing: {name}");
                         Interlocked.Increment(ref errors);
                     }
@@ -356,10 +343,7 @@ namespace RenProfileConsole
                         }
                         catch (Exception ex)
                         {
-                            if (logErrs)
-                            {
-                                LogError($"Error accessing/writing {keyName}\n{ex.ToString()}");
-                            }
+                            LogError($"Error accessing/writing {keyName}\n{ex.ToString()}");
                             Console.WriteLine($"Error updating: {newKeyName}");
                             Interlocked.Increment(ref errors);
                         }
@@ -368,10 +352,7 @@ namespace RenProfileConsole
             }
             catch (Exception ex)
             {
-                if (logErrs)
-                {
-                    LogError($"Error accessing/writing {key.ToString()}\n{ex.ToString()}");
-                }
+                LogError($"Error accessing/writing {key.ToString()}\n{ex.ToString()}");
                 Interlocked.Increment(ref errors);
             }
         }

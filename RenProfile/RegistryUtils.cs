@@ -42,10 +42,7 @@ namespace RenProfileConsole
 
                     Console.WriteLine(errMsg);
 
-                    if (Program.logErrs)
-                    {
-                        Program.LogError(errMsg);
-                    }
+                    Program.LogError(errMsg);
                 }
             });
 
