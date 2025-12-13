@@ -65,7 +65,7 @@ namespace RenProfileConsole
                 {
                     if (args[0] == "?")
                     {
-                        Console.WriteLine(@"Syntax: RenProfile.exe C:\\Full\\Path\\To\\OldProfile C:\\Full\\Path\\To\\NewProfile C:\\Optional\\Path\\To\\Log\\Errors.txt");
+                        Console.WriteLine(@"Syntax: RenProfile.exe C:\Full\Path\To\OldProfile C:\Full\Path\To\NewProfile C:\Optional\Path\To\Log\Errors.txt");
                         ExitConsole();
                     }
                     else
@@ -274,7 +274,7 @@ namespace RenProfileConsole
         {
             try
             {
-                // Get the 8.3 short path format (e.g., "C:\\Users\\JOHNDO~1") because some registry
+                // Get the 8.3 short path format (e.g., "C:\Users\JOHNDO~1") because some registry
                 // entries may store paths in this format for backwards compatibility
                 StringBuilder sb = new StringBuilder(300);
                 int n = NativeMethods.FileSystem.GetShortPathName(oldDir, sb, 300);
