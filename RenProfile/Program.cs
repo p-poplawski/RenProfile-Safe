@@ -29,13 +29,13 @@ namespace RenProfileConsole
         /// <param name="args">Command line arguments: oldProfilePath newProfilePath [errorLogPath]</param>
         private static void Main(string[] args)
         {
+            // Validate command line arguments
             try
             {
                 if (args.Length == 0)
                 {
                     Console.WriteLine("Missing all parameters.");
                     ExitConsole(1);
-                    return;
                 }
                 else if (args.Length == 1)
                 {
@@ -43,13 +43,11 @@ namespace RenProfileConsole
                     {
                         Console.WriteLine(@"Syntax: C:\Full\Path\To\Profile C:\Path\To\Desired\Profile C:\Optional\Path\To\Write\Errors.txt");
                         ExitConsole();
-                        return;
                     }
                     else
                     {
                         Console.WriteLine("Missing 1 parameter.");
                         ExitConsole(1);
-                        return;
                     }
                 }
                 else if (args.Length == 3)
@@ -69,14 +67,12 @@ namespace RenProfileConsole
                     {
                         Console.WriteLine("Error log was specified but path is invalid.");
                         ExitConsole(1);
-                        return;
                     }
                 }
                 else if (args.Length > 3)
                 {
                     Console.WriteLine("Missing 1 parameter.");
                     ExitConsole(1);
-                    return;
                 }
 
                 oldDir = args[0];
@@ -85,25 +81,21 @@ namespace RenProfileConsole
                 {
                     Console.WriteLine("Old user profile path is invalid.");
                     ExitConsole(1);
-                    return;
                 }
                 else if (String.IsNullOrWhiteSpace(newDir) || newDir.Length < 4)
                 {
                     Console.WriteLine("New user profile path is invalid.");
                     ExitConsole(1);
-                    return;
                 }
                 else if (!Directory.Exists(oldDir))
                 {
                     Console.WriteLine("Old user profile path does not exist.");
                     ExitConsole(1);
-                    return;
                 }
                 else if (Directory.Exists(newDir))
                 {
                     Console.WriteLine("New user profile path already exists. Use another name.");
                     ExitConsole(1);
-                    return;
                 }
             }
             catch (Exception ex)
@@ -115,7 +107,6 @@ namespace RenProfileConsole
                 }
 
                 ExitConsole(1);
-                return;
             }
 
             Start();
