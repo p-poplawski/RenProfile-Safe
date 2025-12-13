@@ -9,7 +9,7 @@
     <RootNamespace>RenProfile</RootNamespace>
     <AssemblyName>RenProfile</AssemblyName>
     <TargetFrameworkVersion>v4.7</TargetFrameworkVersion>
-	<LangVersion>preview</LangVersion>
+    <LangVersion>preview</LangVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <Deterministic>true</Deterministic>

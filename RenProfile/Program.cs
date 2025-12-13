@@ -14,14 +14,14 @@ namespace RenProfileConsole
     /// </summary>
     internal class Program
     {
-        public static bool logErrs = false;
-        public static int errors = 0;
-        public static int successful = 0;
-        public static int processed = 0;
+        private static bool logErrs = false;
+        private static int errors = 0;
+        private static int successful = 0;
+        private static int processed = 0;
 
-        public static String oldDir = "";
-        public static String newDir = "";
-        public static String errPath = "";
+        private static string oldDir = "";
+        private static string newDir = "";
+        private static string errPath = "";
 
         /// <summary>
         /// Entry point for the console application. Validates parameters and initiates profile renaming.
@@ -156,19 +156,34 @@ namespace RenProfileConsole
                     // Update HKLM and HKU only; HKCU is for the current user (not the target profile),
                     // and other hives (HKCR, HKCC) are symlinks to subtrees of these two
                     Console.WriteLine("==========Updating HKLM==========");
-                    try { Registry.LocalMachine.IterateKeys((key) => UpdateKey(key, oldDir, newDir)); }
-                    catch { Console.WriteLine("Error occurred when updating HKLM keys. Check output."); }
+                    try
+                    {
+                        Registry.LocalMachine.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Error occurred when updating HKLM keys. Check output.");
+                    }
                     Console.WriteLine("==========Updating HKU==========");
-                    try { Registry.Users.IterateKeys((key) => UpdateKey(key, oldDir, newDir)); }
-                    catch { Console.WriteLine("Error occurred when updating HKU keys. Check output."); }
-                    Console.WriteLine($"Processed: {processed}, Updated: {successful}, Failed: {errors}");
+                    try
+                    {
+                        Registry.Users.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
+                    }
+                    catch
+                    {
+                        Console.WriteLine("Error occurred when updating HKU keys. Check output.");
+                    }
+                    Console.WriteLine($"Processed: {processed}\nUpdated : {successful}\nFailed   : {errors}");
                 }
 
                 // Unload the hive before attempting to rename the directory
                 RegistryUtils.UnloadUserHive(tempUserHiveName);
 
                 // Rename the actual profile directory on disk
-                try { Directory.Move(oldDir, newDir); }
+                try
+                {
+                    Directory.Move(oldDir, newDir);
+                }
                 catch (Exception ex)
                 {
                     Console.WriteLine("Error renaming physical profile directories, another process might have a lock still.");
@@ -192,7 +207,7 @@ namespace RenProfileConsole
         /// <param name="exitCode">Code to exit with. Default: 0 (Success)</param>
         private static void ExitConsole(int exitCode = 0)
         {
-            Console.WriteLine("");
+            Console.WriteLine();
             Console.WriteLine("Exit code is " + exitCode + " (0=success)");
             Console.WriteLine("Press any key to exit...");
             Console.ReadKey();
@@ -214,9 +229,14 @@ namespace RenProfileConsole
             {
                 using (FileStream file = File.Exists(errPath) ? File.Open(errPath, FileMode.Append) : File.Open(errPath, FileMode.CreateNew))
                 using (StreamWriter sw = new StreamWriter(file))
-                { sw.WriteLine($"{DateTime.Now.ToString()}: {errorMessage} \n==========="); }
+                {
+                    sw.WriteLine($"{DateTime.Now.ToString()}: {errorMessage} \n===========");
+                }
             }
-            catch { /* Silently fail if unable to write to error log */ }
+            catch
+            {
+                /* Silently fail if unable to write to error log */
+            }
         }
 
         /// <summary>
@@ -244,7 +264,10 @@ namespace RenProfileConsole
                 Console.WriteLine($"={{{key.ToString()}}}=");
                 foreach (string name in names)
                 {
-                    if (String.IsNullOrWhiteSpace(name)) { continue; }
+                    if (String.IsNullOrWhiteSpace(name))
+                    {
+                        continue;
+                    }
                     Interlocked.Increment(ref processed);
 
                     try
@@ -329,7 +352,10 @@ namespace RenProfileConsole
                 string keyNewDir = newDir.Replace(@"\", @"%5C");
                 foreach (string keyName in key.GetSubKeyNames())
                 {
-                    if (String.IsNullOrWhiteSpace(keyName)) { continue; }
+                    if (String.IsNullOrWhiteSpace(keyName))
+                    {
+                        continue;
+                    }
                     Interlocked.Increment(ref processed);
 
                     string newKeyName = Regex.Replace(keyName, keypattern, keyNewDir, RegexOptions.IgnoreCase);
