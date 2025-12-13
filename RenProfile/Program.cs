@@ -109,14 +109,14 @@ namespace RenProfileConsole
                 ExitConsole(1);
             }
 
-            Start();
+            PerformProfileRename();
         }
 
         /// <summary>
         /// Performs the profile renaming operation by loading the user registry hive,
         /// updating all references in HKLM and HKU, and renaming the physical directory.
         /// </summary>
-        public static void Start()
+        public static void PerformProfileRename()
         {
             // Create a temporary unique name to mount the target user's registry hive
             string tempUserHiveName = $"__tmpMoveUserProfile";
