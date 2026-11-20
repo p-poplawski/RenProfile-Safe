@@ -318,7 +318,7 @@ namespace RenProfileConsole
                             {
                                 try
                                 {
-                                    key.SetValue(name, newValues);
+                                    key.SetValue(name, newValues, RegistryValueKind.MultiString);
                                     Console.WriteLine(String.Join(":", newValues));
                                     Interlocked.Increment(ref successful);
                                 }
@@ -334,14 +334,15 @@ namespace RenProfileConsole
                         // ExpandString is used for paths with environment variables like %USERPROFILE%
                         else if (key.GetValueKind(name) == RegistryValueKind.String || key.GetValueKind(name) == RegistryValueKind.ExpandString)
                         {
-                            string oldValue = (string)key.GetValue(name);
+                            string oldValue = (string)key.GetValue(
+                                name, null, RegistryValueOptions.DoNotExpandEnvironmentNames);
                             string newValue = Regex.Replace(oldValue, pattern, newDir, RegexOptions.IgnoreCase);
 
                             if (oldValue != newValue)
                             {
                                 try
                                 {
-                                    key.SetValue(name, newValue);
+                                    key.SetValue(name, newValue, key.GetValueKind(name));
                                     Console.WriteLine($"Set: {newValue}");
                                     Interlocked.Increment(ref successful);
                                 }
