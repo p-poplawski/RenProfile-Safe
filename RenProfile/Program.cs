@@ -276,13 +276,24 @@ namespace RenProfileConsole
             {
                 // Get the 8.3 short path format (e.g., "C:\Users\JOHNDO~1") because some registry
                 // entries may store paths in this format for backwards compatibility
-                StringBuilder sb = new StringBuilder(300);
-                int n = NativeMethods.FileSystem.GetShortPathName(oldDir, sb, 300);
-                string shortOldDir = sb.ToString();
 
-                // Create a regex pattern that matches either the long or short path format
-                // Regex.Escape ensures special chars in paths don't break the pattern
-                string pattern = $"({Regex.Escape(oldDir)}|{Regex.Escape(shortOldDir)})";
+                if (string.IsNullOrWhiteSpace(oldDir))
+                    throw new ArgumentException("Source profile path is empty.");
+
+                StringBuilder sb = new StringBuilder(300);
+                int n = NativeMethods.FileSystem.GetShortPathName(
+                    oldDir, sb, sb.Capacity);
+
+                string shortOldDir = n > 0 && n < sb.Capacity
+                    ? sb.ToString()
+                    : string.Empty;
+
+                string pattern = Regex.Escape(oldDir);
+
+                if (!string.IsNullOrWhiteSpace(shortOldDir))
+                {
+                    pattern = $"({pattern}|{Regex.Escape(shortOldDir)})";
+                }
 
                 string[] names = key.GetValueNames();
                 Console.WriteLine($"={{{key.ToString()}}}=");
