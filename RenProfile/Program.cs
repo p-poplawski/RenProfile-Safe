@@ -288,12 +288,14 @@ namespace RenProfileConsole
                     ? sb.ToString()
                     : string.Empty;
 
-                string pattern = Regex.Escape(oldDir);
+                string pathAlternatives = Regex.Escape(oldDir);
 
                 if (!string.IsNullOrWhiteSpace(shortOldDir))
                 {
-                    pattern = $"({pattern}|{Regex.Escape(shortOldDir)})";
+                    pathAlternatives += "|" + Regex.Escape(shortOldDir);
                 }
+
+                string pattern = "(?:" + pathAlternatives + @")(?=\\|/|""|$)";
 
                 string[] names = key.GetValueNames();
                 Console.WriteLine($"={{{key.ToString()}}}=");
@@ -384,7 +386,16 @@ namespace RenProfileConsole
 
                 // Registry subkey names can't contain backslashes, but paths are sometimes URL-encoded
                 // in key names, so we need to match %5C (the URL encoding for backslash) instead of \
-                string keypattern = pattern.Replace(@"\", @"%5C");
+                string keyAlternatives = Regex.Escape(
+                    oldDir.Replace(@"\", "%5C"));
+
+                if (!string.IsNullOrWhiteSpace(shortOldDir))
+                {
+                    keyAlternatives += "|" + Regex.Escape(
+                        shortOldDir.Replace(@"\", "%5C"));
+                }
+
+                string keypattern = "(?:" + keyAlternatives + @")(?=%5C|%2F|$)";
                 string keyNewDir = newDir.Replace(@"\", @"%5C");
                 foreach (string keyName in key.GetSubKeyNames())
                 {
