@@ -215,7 +215,18 @@ namespace RenProfileConsole
                 }
 
                 // Unload the hive before attempting to rename the directory
-                RegistryUtils.UnloadUserHive(tempUserHiveName);
+                int unloadCode = RegistryUtils.UnloadUserHive(tempUserHiveName);
+
+                if (unloadCode != 0)
+                    {
+                        Console.WriteLine(
+                            $"ERROR: Cannot unload user registry hive. Error code: {unloadCode}");
+
+                        LogError(
+                            $"Failed to unload temporary registry hive {tempUserHiveName}. Error: {unloadCode}");
+
+                ExitConsole(1);
+                }
 
                 // Rename the actual profile directory on disk
                 try
