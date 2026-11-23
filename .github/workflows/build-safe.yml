@@ -1,6 +1,9 @@
 name: Build RenProfile Safe
 
 on:
+  push:
+    branches:
+      - safe
   workflow_dispatch:
 
 permissions:
