@@ -226,8 +226,8 @@ namespace RenProfileConsole
                 {
                     Console.WriteLine("Error renaming physical profile directories, another process might have a lock still.");
                     Console.WriteLine($"Error details: {ex.Message}");
-
                     LogError($"Final move failed when renaming '{oldDir}' to '{newDir}'.\n{ex}");
+                    ExitConsole(1);
                 }
 
                 ExitConsole();
