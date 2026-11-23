@@ -172,7 +172,12 @@ namespace RenProfileConsole
             if (Privileges.EnablePrivileges("SeRestorePrivilege"))
             {
                 // Load the user's NTUSER.DAT file into the registry temporarily
-                int loadCode = RegistryUtils.LoadUserHive($"{oldDir}\\NTUSER.dat", tempUserHiveName);
+                if (loadCode != 0)
+                {
+                    Console.WriteLine(
+                        $"ERROR: Cannot load user registry hive. Error code: {loadCode}");
+                    ExitConsole(1);
+                }
 
                 // Keep the hive loaded while we update references
                 using (RegistryKey userHive = Registry.Users.OpenSubKey(tempUserHiveName))
