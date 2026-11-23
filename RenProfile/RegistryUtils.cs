@@ -39,10 +39,10 @@ namespace RenProfileConsole
                 catch (Exception ex)
                 {
                     string errMsg = $"Failed to open subkey '{keyname}' under '{root.Name}': {ex.Message}";
-
                     Console.WriteLine(errMsg);
 
                     Program.LogError(errMsg);
+                    throw;
                 }
             });
 
