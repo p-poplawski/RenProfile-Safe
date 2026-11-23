@@ -166,7 +166,7 @@ namespace RenProfileConsole
             }
 
             // Create a temporary unique name to mount the target user's registry hive
-            string tempUserHiveName = $"__tmpMoveUserProfile";
+            string tempUserHiveName = "__tmpRenProfile_" + Guid.NewGuid().ToString("N");
 
             // SeRestorePrivilege is required to load/unload registry hives, even when running as administrator
             if (Privileges.EnablePrivileges("SeRestorePrivilege"))
