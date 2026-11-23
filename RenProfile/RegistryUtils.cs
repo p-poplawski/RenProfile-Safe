@@ -24,7 +24,7 @@ namespace RenProfileConsole
 
             // Process subkeys in parallel for better performance on large registry trees
             // Each subkey and its descendants are processed independently
-            Parallel.ForEach(root.GetSubKeyNames(), keyname =>
+            foreach (string keyname in root.GetSubKeyNames())
             {
                 try
                 {
@@ -44,7 +44,7 @@ namespace RenProfileConsole
                     Program.LogError(errMsg);
                     throw;
                 }
-            });
+            }
 
             // Execute the action on this key AFTER processing all children
             // This ensures we handle leaf nodes first, which is safer when renaming/deleting
