@@ -1,0 +1,28 @@
+name: Build RenProfile Safe
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: windows-2022
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Compile
+        run: msbuild RenProfile/RenProfile.csproj /p:Configuration=Release /p:Platform=AnyCPU
+
+      - name: Upload compiled files
+        uses: actions/upload-artifact@v4
+        with:
+          name: RenProfile-Safe-test
+          path: RenProfile/bin/Release/
+          if-no-files-found: error
