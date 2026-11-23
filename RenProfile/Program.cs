@@ -198,18 +198,22 @@ namespace RenProfileConsole
                     {
                         Registry.LocalMachine.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("Error occurred when updating HKLM keys. Check output.");
+                        Console.WriteLine("ERROR: Failed to update HKLM registry.");
+                        LogError($"HKLM update failed: {ex}");
+                        Interlocked.Increment(ref errors);
                     }
                     Console.WriteLine("==========Updating HKU==========");
                     try
                     {
                         userHive.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
                     }
-                    catch
+                    catch (Exception ex)
                     {
-                        Console.WriteLine("Error occurred when updating HKU keys. Check output.");
+                        Console.WriteLine("ERROR: Failed to update HKU registry.");
+                        LogError($"HKU update failed: {ex}");
+                        Interlocked.Increment(ref errors);
                     }
                     Console.WriteLine($"Processed: {processed}\nUpdated : {successful}\nFailed   : {errors}");
                 }
