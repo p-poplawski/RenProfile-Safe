@@ -217,30 +217,29 @@ namespace RenProfileConsole
                 return;
                 }
             // Ensure we can rename the folder before touching the registry
-            string tempTestDir = newDir + ".tmp_test_move";
+            // Validate source and destination without moving files
+            string sourceFull = Path.GetFullPath(oldDir).TrimEnd('\\');
+            string targetFull = Path.GetFullPath(newDir).TrimEnd('\\');
 
-            try
-            {
-                if (Directory.Exists(tempTestDir))
+            string sourceParent = Path.GetDirectoryName(sourceFull);
+            string targetParent = Path.GetDirectoryName(targetFull);
+
+            if (string.IsNullOrWhiteSpace(sourceParent) ||
+                !string.Equals(sourceParent, targetParent,
+                    StringComparison.OrdinalIgnoreCase))
                 {
-                    Console.WriteLine($"Temporary test directory already exists: {tempTestDir}");
-                    Console.WriteLine("Delete or rename that folder and try again.");
-                    ExitConsole(1);
+                Console.WriteLine(
+                    "ERROR: Source and destination must be in the same parent directory.");
+                ExitConsole(1);
                 }
 
-                Directory.Move(oldDir, tempTestDir);
-                Directory.Move(tempTestDir, oldDir);
-            }
-            catch (Exception ex)
+            if (Directory.Exists(targetFull) || File.Exists(targetFull))
             {
-                Console.WriteLine("Unable to rename the profile directory. The folder may be in use or you may not have sufficient permissions.");
-                Console.WriteLine($"Error details: {ex.Message}");
-                Console.WriteLine("Try running this tool again from Safe Mode as an administrator account that is NOT the owner of the source user profile folder.");
-
-                LogError($"Test move failed when renaming '{oldDir}' to '{tempTestDir}' and back.\n{ex}");
-
+                Console.WriteLine("ERROR: Destination already exists.");
                 ExitConsole(1);
             }
+
+            Console.WriteLine("Profile directory paths validated.");
 
             // Create a temporary unique name to mount the target user's registry hive
             string tempUserHiveName = "__tmpRenProfile_" + Guid.NewGuid().ToString("N");
