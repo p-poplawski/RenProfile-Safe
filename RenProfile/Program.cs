@@ -227,7 +227,16 @@ namespace RenProfileConsole
 
                 ExitConsole(1);
                 }
+                if (errors > 0)
+                    {
+                        Console.WriteLine(
+                            $"ERROR: {errors} registry operations failed. Directory rename cancelled.");
 
+                        LogError(
+                            $"Migration stopped because {errors} registry operations failed.");
+
+                        ExitConsole(1);
+                    }
                 // Rename the actual profile directory on disk
                 try
                 {
