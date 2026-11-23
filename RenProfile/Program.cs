@@ -15,6 +15,7 @@ namespace RenProfileConsole
     internal class Program
     {
         private static bool logErrs = false;
+        private static bool checkOnly = false;
         private static int errors = 0;
         private static int successful = 0;
         private static int processed = 0;
@@ -29,6 +30,12 @@ namespace RenProfileConsole
         /// <param name="args">Command line arguments: oldProfilePath newProfilePath [errorLogPath]</param>
         private static void Main(string[] args)
         {
+            if (args.Length == 3 &&
+                string.Equals(args[2], "--check", StringComparison.OrdinalIgnoreCase))
+            {
+                checkOnly = true;
+                args = new[] { args[0], args[1] };
+            }
             // Check Safe Mode and prompt if not
             try
             {
@@ -198,6 +205,17 @@ namespace RenProfileConsole
                 ExitConsole(1);
             }
         }
+            if (checkOnly)
+                {
+                    Console.WriteLine("PROFILE CHECK PASSED");
+                    Console.WriteLine($"Source: {oldDir}");
+                    Console.WriteLine($"Target: {newDir}");
+                    Console.WriteLine($"Source SID: {sourceSid}");
+                    Console.WriteLine("No changes have been made.");
+
+                    ExitConsole(0);
+                return;
+                }
             // Ensure we can rename the folder before touching the registry
             string tempTestDir = newDir + ".tmp_test_move";
 
