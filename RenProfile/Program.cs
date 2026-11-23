@@ -183,8 +183,14 @@ namespace RenProfileConsole
                 }
 
                 // Keep the hive loaded while we update references
-                using (RegistryKey userHive = Registry.Users.OpenSubKey(tempUserHiveName))
+                using (RegistryKey userHive = Registry.Users.OpenSubKey(tempUserHiveName, true))
                 {
+                    if (userHive == null)
+                    {
+                        Console.WriteLine("ERROR: Cannot access target user registry hive.");
+                        RegistryUtils.UnloadUserHive(tempUserHiveName);
+                        ExitConsole(1);
+                    }
                     // Update HKLM and HKU only; HKCU is for the current user (not the target profile),
                     // and other hives (HKCR, HKCC) are symlinks to subtrees of these two
                     Console.WriteLine("==========Updating HKLM==========");
@@ -199,7 +205,7 @@ namespace RenProfileConsole
                     Console.WriteLine("==========Updating HKU==========");
                     try
                     {
-                        Registry.Users.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
+                        userHive.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
                     }
                     catch
                     {
