@@ -139,6 +139,65 @@ namespace RenProfileConsole
         /// </summary>
         public static void PerformProfileRename()
         {
+            string sourceSid = null;
+            string sourcePath = Path.GetFullPath(oldDir).TrimEnd('\\');
+
+            using (RegistryKey profiles = Registry.LocalMachine.OpenSubKey(
+                @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList"))
+        {
+            if (profiles != null)
+            {
+                foreach (string sid in profiles.GetSubKeyNames())
+                {
+                    using (RegistryKey profile = profiles.OpenSubKey(sid))
+                    {
+                        if (profile == null) continue;
+
+                        string path = profile.GetValue(
+                            "ProfileImagePath", null,
+                            RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+
+                        if (string.IsNullOrWhiteSpace(path)) continue;
+
+                        string fullPath = Path.GetFullPath(
+                            Environment.ExpandEnvironmentVariables(path)
+                            ).TrimEnd('\\');
+
+                        if (string.Equals(fullPath, sourcePath,
+                            StringComparison.OrdinalIgnoreCase))
+                        {
+                            sourceSid = sid;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+
+        if (sourceSid == null)
+        {
+            Console.WriteLine("ERROR: Source is not a registered Windows profile.");
+            ExitConsole(1);
+        }
+
+        string currentSid =
+            System.Security.Principal.WindowsIdentity.GetCurrent().User.Value;
+
+        if (string.Equals(sourceSid, currentSid,
+            StringComparison.OrdinalIgnoreCase))
+        {
+            Console.WriteLine("ERROR: Cannot rename the current user's profile.");
+            ExitConsole(1);
+        }
+
+        using (RegistryKey loadedProfile = Registry.Users.OpenSubKey(sourceSid))
+        {
+            if (loadedProfile != null)
+            {
+                Console.WriteLine("ERROR: Source profile is currently loaded.");
+                ExitConsole(1);
+            }
+        }
             // Ensure we can rename the folder before touching the registry
             string tempTestDir = newDir + ".tmp_test_move";
 
