@@ -67,7 +67,11 @@ namespace RenProfileConsole
         {
             // Windows registry API doesn't have a direct rename operation
             // so we copy the value (preserving its type) then delete the original
-            key.SetValue(newName, key.GetValue(oldName), key.GetValueKind(oldName));
+            key.SetValue(
+                        newName,
+                        key.GetValue(oldName, null,
+                            RegistryValueOptions.DoNotExpandEnvironmentNames),
+                        key.GetValueKind(oldName));
             key.DeleteValue(oldName);
         }
 
@@ -102,7 +106,11 @@ namespace RenProfileConsole
                 // Copy all values from source to target, preserving their types
                 foreach (string name in source.GetValueNames())
                 {
-                    target.SetValue(name, source.GetValue(name), source.GetValueKind(name));
+                    target.SetValue(
+                        name,
+                        source.GetValue(name, null,
+                            RegistryValueOptions.DoNotExpandEnvironmentNames),
+                        source.GetValueKind(name));
                 }
 
                 // Recursively clone all subkeys
