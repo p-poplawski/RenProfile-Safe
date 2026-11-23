@@ -32,9 +32,15 @@ namespace RenProfileConsole
                     // Using statement ensures the key is closed even if an exception occurs
                     using (RegistryKey key = root.OpenSubKey(keyname, true))
                     {
-                        // Recursively process all descendants first (depth-first traversal)
-                        key.IterateKeys(action);
-                    }
+                        if (key == null)
+                        {
+                            throw new InvalidOperationException(
+                                $"Cannot open registry key: {root.Name}\\{keyname}");
+                        }
+
+    // Recursively process all descendants first
+    key.IterateKeys(action);
+}
                 }
                 catch (Exception ex)
                 {
