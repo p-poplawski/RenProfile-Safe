@@ -205,17 +205,6 @@ namespace RenProfileConsole
                 ExitConsole(1);
             }
         }
-            if (checkOnly)
-                {
-                    Console.WriteLine("PROFILE CHECK PASSED");
-                    Console.WriteLine($"Source: {oldDir}");
-                    Console.WriteLine($"Target: {newDir}");
-                    Console.WriteLine($"Source SID: {sourceSid}");
-                    Console.WriteLine("No changes have been made.");
-
-                    ExitConsole(0);
-                return;
-                }
             // Ensure we can rename the folder before touching the registry
             // Validate source and destination without moving files
             string sourceFull = Path.GetFullPath(oldDir).TrimEnd('\\');
@@ -240,6 +229,17 @@ namespace RenProfileConsole
             }
 
             Console.WriteLine("Profile directory paths validated.");
+            if (checkOnly)
+                {
+                    Console.WriteLine("PROFILE CHECK PASSED");
+                    Console.WriteLine($"Source: {oldDir}");
+                    Console.WriteLine($"Target: {newDir}");
+                    Console.WriteLine($"Source SID: {sourceSid}");
+                    
+
+                    ExitConsole(0);
+                return;
+                }
 
             // Create a temporary unique name to mount the target user's registry hive
             string tempUserHiveName = "__tmpRenProfile_" + Guid.NewGuid().ToString("N");
