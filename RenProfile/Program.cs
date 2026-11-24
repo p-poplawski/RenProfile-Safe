@@ -272,7 +272,20 @@ namespace RenProfileConsole
                     Console.WriteLine("==========Updating HKLM==========");
                     try
                     {
-                        Registry.LocalMachine.IterateKeys((key) => UpdateKey(key, oldDir, newDir));
+                        string profileKeyPath =
+                            @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\" + sourceSid;
+
+                        using (RegistryKey profileKey =
+                            Registry.LocalMachine.OpenSubKey(profileKeyPath, true))
+                            {
+                                if (profileKey == null)
+                                {
+                                    throw new InvalidOperationException(
+                                        "Cannot open source profile registry key.");
+                                }
+
+                                UpdateKey(profileKey, oldDir, newDir);
+                            }
                     }
                     catch (Exception ex)
                     {
