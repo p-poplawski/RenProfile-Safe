@@ -284,7 +284,45 @@ namespace RenProfileConsole
                                         "Cannot open source profile registry key.");
                                 }
 
-                                UpdateKey(profileKey, oldDir, newDir);
+                                --- 
+                                string registeredPath = profileKey.GetValue(
+                                    "ProfileImagePath", null,
+                                        RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+
+                                if (string.IsNullOrWhiteSpace(registeredPath) ||
+                                    !string.Equals(
+                                        Path.GetFullPath(
+                                            Environment.ExpandEnvironmentVariables(registeredPath)
+                                        ).TrimEnd('\\'),
+                                        sourcePath,
+                                StringComparison.OrdinalIgnoreCase))
+                                {
+                                    throw new InvalidOperationException(
+                                        "Source ProfileImagePath does not match the selected profile.");
+                                        }
+
+                                RegistryValueKind originalKind =
+                                    profileKey.GetValueKind("ProfileImagePath");
+
+                                if (originalKind != RegistryValueKind.String &&
+                                    originalKind != RegistryValueKind.ExpandString)
+                                    {
+                                        throw new InvalidOperationException(
+                                            "Unsupported ProfileImagePath registry value type.");
+                                    }
+
+                                profileKey.SetValue("ProfileImagePath", targetFull, originalKind);
+
+                                string verifiedPath = profileKey.GetValue(
+                                "ProfileImagePath", null,
+                                RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+
+                                if (!string.Equals(verifiedPath, targetFull,
+                                    StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        throw new InvalidOperationException(
+                                            "ProfileImagePath verification failed.");
+                                    }
                             }
                     }
                     catch (Exception ex)
