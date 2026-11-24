@@ -283,8 +283,7 @@ namespace RenProfileConsole
                                     throw new InvalidOperationException(
                                         "Cannot open source profile registry key.");
                                 }
-
-                                --- 
+ 
                                 string registeredPath = profileKey.GetValue(
                                     "ProfileImagePath", null,
                                         RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
