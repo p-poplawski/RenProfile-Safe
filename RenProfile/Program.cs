@@ -312,7 +312,10 @@ namespace RenProfileConsole
                         $"ERROR: Cannot load user registry hive. Error code: {loadCode}");
                     ExitConsole(1);
                 }
-
+            string originalProfileImagePath = null;
+            RegistryValueKind originalProfileImagePathKind =
+                RegistryValueKind.String;
+                
                 // Keep the hive loaded while we update references
                 using (RegistryKey userHive = Registry.Users.OpenSubKey(tempUserHiveName, true))
                 {
@@ -364,7 +367,8 @@ namespace RenProfileConsole
                                         throw new InvalidOperationException(
                                             "Unsupported ProfileImagePath registry value type.");
                                     }
-
+                                originalProfileImagePath = registeredPath;
+                                originalProfileImagePathKind = originalKind;
                                 profileKey.SetValue("ProfileImagePath", targetFull, originalKind);
 
                                 string verifiedPath = profileKey.GetValue(
@@ -427,14 +431,70 @@ namespace RenProfileConsole
                 {
                     Directory.Move(oldDir, newDir);
                 }
+                
                 catch (Exception ex)
                 {
-                    Console.WriteLine("Error renaming physical profile directories, another process might have a lock still.");
-                    Console.WriteLine($"Error details: {ex.Message}");
-                    LogError($"Final move failed when renaming '{oldDir}' to '{newDir}'.\n{ex}");
+                    Console.WriteLine("ERROR: Directory rename failed.");
+                    LogError($"Directory rename failed: {ex}");
+
+                    try
+                    {
+                        if (string.IsNullOrWhiteSpace(originalProfileImagePath))
+                            throw new InvalidOperationException(
+                                "Original profile path is unavailable.");
+
+                        string path = @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\"
+                            + sourceSid;
+
+                        using (RegistryKey key =
+                            Registry.LocalMachine.OpenSubKey(path, true))
+                        {
+                            if (key == null)
+                                throw new InvalidOperationException(
+                                    "Cannot open profile registry key for recovery.");
+
+                            string currentPath = key.GetValue(
+                                "ProfileImagePath", null,
+                                RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+
+                            if (string.Equals(currentPath, targetFull,
+                                StringComparison.OrdinalIgnoreCase))
+                            {
+                                key.SetValue("ProfileImagePath",
+                                    originalProfileImagePath,
+                                    originalProfileImagePathKind);
+                            }
+                            else if (!string.Equals(currentPath,
+                                originalProfileImagePath,
+                                StringComparison.OrdinalIgnoreCase))
+                            {
+                                throw new InvalidOperationException(
+                                    "ProfileImagePath has an unexpected value.");
+                            }
+
+                            string restoredPath = key.GetValue(
+                                "ProfileImagePath", null,
+                                RegistryValueOptions.DoNotExpandEnvironmentNames) as string;
+
+                            if (!string.Equals(restoredPath,
+                                originalProfileImagePath,
+                                StringComparison.OrdinalIgnoreCase))
+                                throw new IOException("Recovery verification failed.");
+                        }
+
+                        Console.WriteLine("Original ProfileImagePath restored.");
+                    }
+                    catch (Exception recoveryEx)
+                    {
+                        Console.WriteLine(
+                            "CRITICAL: Automatic ProfileImagePath recovery failed.");
+                        Console.WriteLine(recoveryEx.Message);
+                        LogError($"Recovery failed: {recoveryEx}");
+                    }
+
                     ExitConsole(1);
                 }
-
+                
                 ExitConsole();
             }
             else
