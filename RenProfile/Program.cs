@@ -236,10 +236,65 @@ namespace RenProfileConsole
                     Console.WriteLine($"Target: {newDir}");
                     Console.WriteLine($"Source SID: {sourceSid}");
                     
-
                     ExitConsole(0);
                 return;
                 }
+            string backupDirectory = Path.Combine(
+                Environment.GetFolderPath(
+                    Environment.SpecialFolder.LocalApplicationData),
+                "RenProfileSafe",
+                    "Backup_" + DateTime.Now.ToString("yyyyMMdd_HHmmss")
+                        + "_" + Guid.NewGuid().ToString("N"));
+
+            try
+                {
+                    Directory.CreateDirectory(backupDirectory);
+
+                // Backup the original user registry hive
+                File.Copy(
+                    Path.Combine(sourceFull, "NTUSER.DAT"),
+                    Path.Combine(backupDirectory, "NTUSER.DAT"),
+                    false);
+
+                // Export the Windows profile registration
+                string regKey =
+                    @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\"
+                        + sourceSid;
+
+                string regBackup = Path.Combine(
+                    backupDirectory, "ProfileList.reg");
+
+                var psi = new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName = "reg.exe",
+                            Arguments = "export \"" + regKey + "\" \"" +
+                        regBackup + "\" /y",
+                        UseShellExecute = false,
+                        CreateNoWindow = true
+                    };
+
+                    using (var process = System.Diagnostics.Process.Start(psi))
+                    {
+                    if (process == null)
+                        throw new InvalidOperationException("Cannot start reg.exe.");
+
+                        process.WaitForExit();
+
+                    if (process.ExitCode != 0)
+                        throw new IOException("Registry export failed.");
+                    }
+
+                if (!File.Exists(regBackup))
+                    throw new IOException("Registry backup was not created.");
+
+                Console.WriteLine("Backup created: " + backupDirectory);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("ERROR: Backup failed. " + ex.Message);
+                ExitConsole(1);
+                return;
+            }
 
             // Create a temporary unique name to mount the target user's registry hive
             string tempUserHiveName = "__tmpRenProfile_" + Guid.NewGuid().ToString("N");
