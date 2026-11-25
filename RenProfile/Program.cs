@@ -256,6 +256,51 @@ namespace RenProfileConsole
                     Path.Combine(backupDirectory, "NTUSER.DAT"),
                     false);
 
+                // Backup NTUSER.DAT transaction logs
+                foreach (string fileName in new[]
+                {
+                    "NTUSER.DAT.LOG1",
+                    "NTUSER.DAT.LOG2"
+                })
+                {
+                    string sourceFile = Path.Combine(sourceFull, fileName);
+
+                    if (File.Exists(sourceFile))
+                    {
+                        File.Copy(
+                            sourceFile,
+                            Path.Combine(backupDirectory, fileName),
+                            false);
+                    }
+                }
+
+                // Backup the separate user classes registry hive
+                string classesDirectory = Path.Combine(
+                    sourceFull, "AppData", "Local", "Microsoft", "Windows");
+
+                string classesBackupDirectory = Path.Combine(
+                    backupDirectory, "Classes");
+
+                foreach (string fileName in new[]
+                {
+                    "UsrClass.dat",
+                    "UsrClass.dat.LOG1",
+                    "UsrClass.dat.LOG2"
+                })
+                {
+                    string sourceFile = Path.Combine(classesDirectory, fileName);
+
+                    if (File.Exists(sourceFile))
+                    {
+                        Directory.CreateDirectory(classesBackupDirectory);
+
+                File.Copy(
+                    sourceFile,
+                    Path.Combine(classesBackupDirectory, fileName),
+                    false);
+                    }
+                }
+
                 // Export the Windows profile registration
                 string regKey =
                     @"HKLM\SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\"
