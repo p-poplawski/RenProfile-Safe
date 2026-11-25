@@ -16,6 +16,7 @@ namespace RenProfileConsole
     {
         private static bool logErrs = false;
         private static bool checkOnly = false;
+        private static bool backupOnly = false;
         private static int errors = 0;
         private static int successful = 0;
         private static int processed = 0;
@@ -34,6 +35,13 @@ namespace RenProfileConsole
                 string.Equals(args[2], "--check", StringComparison.OrdinalIgnoreCase))
             {
                 checkOnly = true;
+                args = new[] { args[0], args[1] };
+            }
+            if (args.Length == 3 &&
+                string.Equals(args[2], "--backup-only",
+                    StringComparison.OrdinalIgnoreCase))
+            {
+                backupOnly = true;
                 args = new[] { args[0], args[1] };
             }
             // Check Safe Mode and prompt if not
@@ -338,6 +346,15 @@ namespace RenProfileConsole
             {
                 Console.WriteLine("ERROR: Backup failed. " + ex.Message);
                 ExitConsole(1);
+                return;
+            }
+            if (backupOnly)
+            {
+                Console.WriteLine("BACKUP ONLY COMPLETED");
+                Console.WriteLine("Backup location: " + backupDirectory);
+                Console.WriteLine("No changes were made to the source profile or registry.");
+
+                ExitConsole(0);
                 return;
             }
 
