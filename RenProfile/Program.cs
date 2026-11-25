@@ -517,6 +517,97 @@ namespace RenProfileConsole
             Environment.Exit(exitCode);
         }
 
+        private static bool RestoreRegistryBackup(
+            string backupDirectory,
+            string sourceProfileDirectory,
+            string sourceSid,
+            string originalProfileImagePath,
+            RegistryValueKind originalKind,
+            string tempHiveName)
+        {
+            bool success = true;
+
+            // Restore the original user registry hive
+            try
+            {
+                using (RegistryKey loaded =
+                    Registry.Users.OpenSubKey(tempHiveName))
+                {
+                    if (loaded != null)
+                        throw new InvalidOperationException(
+                            "Temporary user hive is still loaded.");
+                }
+
+                string backupFile = Path.Combine(
+                    backupDirectory, "NTUSER.DAT");
+
+                string targetFile = Path.Combine(
+                    sourceProfileDirectory, "NTUSER.DAT");
+
+                if (!File.Exists(backupFile) ||
+                    !File.Exists(targetFile))
+                    throw new IOException(
+                        "User registry backup or target is missing.");
+
+                File.Copy(backupFile, targetFile, true);
+                Console.WriteLine("NTUSER.DAT restored.");
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Console.WriteLine(
+                    "CRITICAL: NTUSER.DAT recovery failed: " + ex.Message);
+                LogError(ex.ToString());
+            }
+
+            // Restore the original Windows profile path
+            try
+            {
+                if (string.IsNullOrWhiteSpace(originalProfileImagePath))
+                    throw new InvalidOperationException(
+                        "Original ProfileImagePath is unavailable.");
+
+                string keyPath =
+                    @"SOFTWARE\Microsoft\Windows NT\CurrentVersion\ProfileList\"
+                    + sourceSid;
+
+                using (RegistryKey key =
+                    Registry.LocalMachine.OpenSubKey(keyPath, true))
+                {
+                    if (key == null)
+                        throw new IOException(
+                            "Cannot open ProfileList key.");
+
+                    key.SetValue(
+                        "ProfileImagePath",
+                        originalProfileImagePath,
+                        originalKind);
+
+                    string verified = key.GetValue(
+                        "ProfileImagePath", null,
+                        RegistryValueOptions.DoNotExpandEnvironmentNames)
+                        as string;
+
+                    if (!string.Equals(
+                        verified, originalProfileImagePath,
+                        StringComparison.OrdinalIgnoreCase))
+                        throw new IOException(
+                            "ProfileImagePath recovery verification failed.");
+                }
+
+                Console.WriteLine("ProfileImagePath restored.");
+            }
+            catch (Exception ex)
+            {
+                success = false;
+                Console.WriteLine(
+                    "CRITICAL: ProfileImagePath recovery failed: " + ex.Message);
+                LogError(ex.ToString());
+            }
+
+            return success;
+        }
+
         /// <summary>
         /// Writes an error message to the error log file if logging is enabled.
         /// </summary>
